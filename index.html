@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .mode-select {
+      margin-bottom: 15px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      font-size: 2.5rem;
+      font-weight: bold;
+      border-radius: 10px;
+      background-color: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .cell:hover {
+      background-color: #e0e7ff;
+    }
+
+    .status {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #444;
+    }
+
+    .btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #5a67d8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tic Tac Toe</h1>
+    <div class="mode-select">
+      <label>
+        <input type="radio" name="mode" value="player" checked onchange="setMode(this.value)"> Vs Player
+      </label>
+      &nbsp;
+      <label>
+        <input type="radio" name="mode" value="computer" onchange="setMode(this.value)"> Vs Computer
+      </label>
+    </div>
+    <div class="grid" id="board"></div>
+    <div class="status" id="status"></div>
+    <button class="btn" onclick="resetGame()">Restart</button>
+  </div>
+
+  <script>
+    const board = document.getElementById('board');
+    const statusDiv = document.getElementById('status');
+    let squares = Array(9).fill(null);
+    let isXTurn = true;
+    let mode = 'player';
+
+    const winningCombos = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
+    ];
+
+    function setMode(selectedMode) {
+      mode = selectedMode;
+      resetGame();
+    }
+
+    function createBoard() {
+      board.innerHTML = '';
+      squares.forEach((val, idx) => {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.textContent = val;
+        cell.addEventListener('click', () => makeMove(idx));
+        board.appendChild(cell);
+      });
+    }
+
+    function makeMove(index) {
+      if (squares[index] || checkWinner()) return;
+      squares[index] = isXTurn ? 'X' : 'O';
+      isXTurn = !isXTurn;
+      updateGame();
+
+      if (mode === 'computer' && !isXTurn && !checkWinner()) {
+        setTimeout(computerMove, 500);
+      }
+    }
+
+    function computerMove() {
+      let emptyIndices = squares.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
+      if (emptyIndices.length === 0) return;
+      let randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      squares[randomIndex] = 'O';
+      isXTurn = true;
+      updateGame();
+    }
+
+    function checkWinner() {
+      for (let combo of winningCombos) {
+        const [a, b, c] = combo;
+        if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+          return squares[a];
+        }
+      }
+      return squares.includes(null) ? null : 'Draw';
+    }
+
+    function updateGame() {
+      createBoard();
+      const winner = checkWinner();
+      if (winner) {
+        statusDiv.textContent = winner === 'Draw' ? "It's a Draw!" : `Winner: ${winner}`;
+      } else {
+        statusDiv.textContent = `Next Turn: ${isXTurn ? 'X' : 'O'}`;
+      }
+    }
+
+    function resetGame() {
+      squares = Array(9).fill(null);
+      isXTurn = true;
+      updateGame();
+    }
+
+    updateGame();
+  </script>
+</body>
+</html>
